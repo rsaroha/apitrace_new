@@ -37,6 +37,9 @@
 
 namespace gltrace {
 
+#define MAX_VIEWPORT_W 1200
+#define MAX_VIEWPORT_H 1200
+
 typedef std::shared_ptr<Context> context_ptr_t;
 static std::map<uintptr_t, context_ptr_t> context_map;
 static std::recursive_mutex context_map_mutex;
@@ -175,6 +178,14 @@ void setContext(uintptr_t context_id)
         GLint scissor[4] = {0, 0, 0, 0};
         _glGetIntegerv(GL_VIEWPORT, viewport);
         _glGetIntegerv(GL_SCISSOR_BOX, scissor);
+
+#if 0
+        if (viewport[2] > MAX_VIEWPORT_W)
+            viewport[2] = scissor[2] = MAX_VIEWPORT_W;
+
+        if (viewport[3] > MAX_VIEWPORT_H)
+            viewport[3] = scissor[3] = MAX_VIEWPORT_H;
+#endif
 
         /*
          * On MacOSX the current context and surface are set independently, and

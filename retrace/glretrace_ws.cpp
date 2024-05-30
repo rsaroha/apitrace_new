@@ -238,9 +238,17 @@ updateDrawable(int width, int height) {
         return;
     }
 
+#if 0
     if (currentDrawable->visible &&
         width  <= currentDrawable->width &&
         height <= currentDrawable->height) {
+        return;
+    }
+#endif
+
+    if (currentDrawable->visible &&
+        width == currentDrawable->width &&
+        height == currentDrawable->height) {
         return;
     }
 
@@ -249,8 +257,16 @@ updateDrawable(int width, int height) {
         return;
     }
 
+#if 0
     width  = std::max(width,  currentDrawable->width);
     height = std::max(height, currentDrawable->height);
+
+
+    /* Get minimum size needed*/
+    width = std::min(width, currentDrawable->width);
+    height = std::min(height, currentDrawable->height);
+#endif
+
 
     // Check for bound framebuffer last, as this may have a performance impact.
     if (currentContext->features().framebuffer_object) {
