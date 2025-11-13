@@ -142,9 +142,9 @@ if (WIN32 OR APPLE OR X11_FOUND)
                 #"-framework OpenGL" # CGL*
             )
 
-            # Bundle Info.plist.  Set sdk version to 10.13.0 to avoid blank screen on Mojave
+            # Bundle Info.plist
             set_target_properties (glretrace PROPERTIES
-                LINK_FLAGS "-sectcreate __TEXT __info_plist ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist -Wl,-sdk_version,10.13.0"
+                LINK_FLAGS "-sectcreate __TEXT __info_plist ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
                 LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
             )
         else ()
@@ -191,15 +191,16 @@ if (ENABLE_EGL AND ENABLE_WAFFLE)
         glproc_egl.cpp
     )
 
+    target_compile_definitions (eglretrace PRIVATE -DHAVE_WAFFLE)
+
     add_dependencies (eglretrace glproc)
-    include_directories (${Waffle_INCLUDE_DIRS})
 
     target_link_libraries (eglretrace
         retrace_common
         glretrace_common
         glhelpers
         glproc
-        ${Waffle_LIBRARIES}
+        PkgConfig::WAFFLE
         ${X11_X11_LIB}
         ${CMAKE_THREAD_LIBS_INIT}
         ${CMAKE_DL_LIBS}

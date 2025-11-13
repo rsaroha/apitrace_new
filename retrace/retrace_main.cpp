@@ -28,6 +28,7 @@
 
 #include <string.h>
 #include <atomic>
+#include <chrono>
 #include <limits.h> // for CHAR_MAX
 #include <memory> // for unique_ptr
 #include <iostream>
@@ -1474,8 +1475,7 @@ int main(int argc, char **argv)
 
     delete snapshotter;
 
-    // XXX: X often hangs on XCloseDisplay
-    //retrace::cleanUp();
+    retrace::cleanUp();
 
 #ifdef _WIN32
     if (mmRes == MMSYSERR_NOERROR) {

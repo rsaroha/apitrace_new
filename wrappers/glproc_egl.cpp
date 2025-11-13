@@ -93,7 +93,7 @@ _getPublicProcAddress(const char *procName)
     if (procName[0] == 'e' && procName[1] == 'g' && procName[2] == 'l') {
         static void *libEGL = NULL;
         if (!libEGL) {
-            libEGL = _dlopen("libEGL.so", RTLD_LOCAL | RTLD_LAZY | RTLD_DEEPBIND);
+            libEGL = _dlopen("libEGL.so.1", RTLD_LOCAL | RTLD_LAZY | RTLD_DEEPBIND);
             if (!libEGL) {
                 return NULL;
             }
@@ -102,31 +102,7 @@ _getPublicProcAddress(const char *procName)
     }
 
     /*
-     * This might happen when:
-     *
-     * - the application is querying non-extensions functions via
-     *   eglGetProcAddress (either because EGL_KHR_get_all_proc_addresses
-     *   is advertised, or merely because the EGL implementation supports
-     *   it regardless, like Mesa does)
-     *
-     * - libGLES*.so nor libGL*.so was ever loaded.
-     *
-     * - we need to resolve entrypoints that application never asked (e.g.,
-     *   glGetIntegerv), for internal purposes
-     *
-     * Therefore, we try to fallback to eglGetProcAddress.
-     *
-     * See https://github.com/apitrace/apitrace/issues/301#issuecomment-68532248
-     */
-    if (strcmp(procName, "eglGetProcAddress") != 0) {
-        proc = (void *) _eglGetProcAddress(procName);
-        if (proc) {
-            return proc;
-        }
-    }
-
-    /*
-     * TODO: We could futher mitigate against using the wrong SO by:
+     * TODO: We could further mitigate against using the wrong SO by:
      * - using RTLD_NOLOAD to ensure we only use an existing SO
      * - the determine the right SO via eglQueryAPI and glGetString(GL_VERSION)
      */
@@ -136,24 +112,35 @@ _getPublicProcAddress(const char *procName)
 
         static void *libGLESv2 = NULL;
         if (!libGLESv2) {
-            libGLESv2 = _dlopen("libGLESv2.so", RTLD_LOCAL | RTLD_LAZY | RTLD_DEEPBIND);
+            libGLESv2 = _dlopen("libGLESv2.so.2", RTLD_LOCAL | RTLD_LAZY | RTLD_DEEPBIND);
         }
         if (libGLESv2) {
             proc = dlsym(libGLESv2, procName);
-        }
-        if (proc) {
-            return proc;
+            if (proc) {
+                return proc;
+            }
         }
 
         static void *libGLESv1 = NULL;
         if (!libGLESv1) {
-            libGLESv1 = _dlopen("libGLESv1_CM.so", RTLD_LOCAL | RTLD_LAZY | RTLD_DEEPBIND);
+            libGLESv1 = _dlopen("libGLESv1_CM.so.1", RTLD_LOCAL | RTLD_LAZY | RTLD_DEEPBIND);
         }
         if (libGLESv1) {
             proc = dlsym(libGLESv1, procName);
+            if (proc) {
+                return proc;
+            }
         }
-        if (proc) {
-            return proc;
+
+        static void *libGL = NULL;
+        if (!libGL) {
+            libGL = _dlopen("libGL.so.1", RTLD_LOCAL | RTLD_LAZY | RTLD_DEEPBIND);
+        }
+        if (libGL) {
+            proc = dlsym(libGL, procName);
+            if (proc) {
+                return proc;
+            }
         }
     }
 

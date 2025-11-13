@@ -98,7 +98,7 @@ target_link_libraries (gltrace_common
 )
 
 if (WIN32)
-    if (MINGW)
+    if (MINGW AND CMAKE_SIZEOF_VOID_P EQUAL 4)
         # Silence warnings about @nn suffix mismatch
         set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-stdcall-fixup")
         set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-stdcall-fixup")
@@ -242,16 +242,27 @@ if (WIN32)
 
 
         #
-        # dxgi.dll and d3d11.dll stubs that merely dispatch entry points to
-        # dxgitrace.dll
+        # dxgi.dll, d3d10, and d3d11.dll are stubs that merely dispatch entry
+        # points to dxgitrace.dll
         #
+
+        # Whole archive linking is needed with Ubuntu 24.04's newer CMake and/or MinGW,
+        # in order for the {dxgi,d3d10,d3d11}.dll's Xxx exports are resolved to
+        # dxgitrace import library's Xxx@NN symbols.
+        if (MINGW AND CMAKE_SIZEOF_VOID_P EQUAL 4 AND NOT CMAKE_VERSION VERSION_LESS "3.24")
+            # Unfortunately $<LINK_LIBRARY:WHOLE_ARCHIVE,...> fails because
+            # subsequent CMake versions ignore it with shared libraries
+            set (DXGITRACE -Wl,--whole-archive dxgitrace -Wl,--no-whole-archive)
+        else ()
+            set (DXGITRACE dxgitrace)
+        endif ()
 
         add_library (dxgistub MODULE
             dxgi.def
             stub.cpp
         )
         target_link_libraries (dxgistub
-            dxgitrace
+            ${DXGITRACE}
         )
         set_target_properties (dxgistub PROPERTIES
             PREFIX ""
@@ -264,7 +275,7 @@ if (WIN32)
             stub.cpp
         )
         target_link_libraries (d3d10stub
-            dxgitrace
+            ${DXGITRACE}
         )
         set_target_properties (d3d10stub PROPERTIES
             PREFIX ""
@@ -272,12 +283,25 @@ if (WIN32)
         )
         install (TARGETS d3d10stub LIBRARY DESTINATION ${WRAPPER_INSTALL_DIR})
 
+        add_library (d3d10_1stub MODULE
+            d3d10_1.def
+            stub.cpp
+        )
+        target_link_libraries (d3d10_1stub
+            ${DXGITRACE}
+        )
+        set_target_properties (d3d10_1stub PROPERTIES
+            PREFIX ""
+            OUTPUT_NAME "d3d10_1"
+        )
+        install (TARGETS d3d10_1stub LIBRARY DESTINATION ${WRAPPER_INSTALL_DIR})
+
         add_library (d3d11stub MODULE
             d3d11.def
             stub.cpp
         )
         target_link_libraries (d3d11stub
-            dxgitrace
+            ${DXGITRACE}
         )
         set_target_properties (d3d11stub PROPERTIES
             PREFIX ""

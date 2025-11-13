@@ -99,19 +99,31 @@ struct Profile {
     operator == (const Profile & other) const {
         return major == other.major &&
                minor == other.minor &&
-               api == other.api &&
-               core == other.core &&
+               api   == other.api   &&
+               core  == other.core  &&
                forwardCompatible == other.forwardCompatible;
     }
 
     // Comparison operator, mainly for use in std::map
     inline bool
     operator < (const Profile & other) const {
-        return major < other.major ||
-               minor < other.minor ||
-               api < other.api ||
-               core < other.core ||
-               forwardCompatible < other.forwardCompatible;
+        if (major != other.major) {
+            return major < other.major;
+        }
+        if (minor != other.minor) {
+            return minor < other.minor;
+        }
+        if (api != other.api) {
+            return api < other.api;
+        }
+        if (core != other.core) {
+            return core < other.core;
+        }
+        if (forwardCompatible != other.forwardCompatible) {
+            return forwardCompatible < other.forwardCompatible;
+        }
+        
+        return false;
     }
 
     std::string
@@ -156,6 +168,7 @@ struct Features
     unsigned ARB_direct_state_access:1;
     unsigned ARB_shader_storage_buffer_object:1;
     unsigned ARB_program_interface_query:1;
+    unsigned OVR_multiview:1;
     unsigned ARB_color_buffer_float:1;
     unsigned instanced_arrays:1;
 

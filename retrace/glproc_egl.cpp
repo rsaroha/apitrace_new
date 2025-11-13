@@ -32,6 +32,10 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef HAVE_WAFFLE
+#include "waffle.h"
+#endif
+
 
 /*
  * Handle to the true OpenGL library.
@@ -80,17 +84,13 @@ _getPublicProcAddress(const char *procName)
 
     /*
      * dlsym(RTLD_NEXT, ...) will fail when the SO containing the symbol was
-     * loaded with RTLD_LOCAL.  We try to override RTLD_LOCAL with RTLD_GLOBAL
-     * when tracing but this doesn't always work.  So we try to guess and load
-     * the shared object directly.
-     *
-     * See https://github.com/apitrace/apitrace/issues/349#issuecomment-113316990
+     * loaded with RTLD_LOCAL, which is _always_ the case when using Waffle.
      */
 
     if (procName[0] == 'e' && procName[1] == 'g' && procName[2] == 'l') {
         static void *libEGL = NULL;
         if (!libEGL) {
-            libEGL = dlopen("libEGL.so", RTLD_LOCAL | RTLD_LAZY);
+            libEGL = dlopen("libEGL.so.1", RTLD_LOCAL | RTLD_LAZY | RTLD_NOLOAD);
             if (!libEGL) {
                 return NULL;
             }
@@ -98,60 +98,60 @@ _getPublicProcAddress(const char *procName)
         return dlsym(libEGL, procName);
     }
 
-    /*
-     * This might happen when:
-     *
-     * - the application is querying non-extensions functions via
-     *   eglGetProcAddress (either because EGL_KHR_get_all_proc_addresses
-     *   is advertised, or merely because the EGL implementation supports
-     *   it regardless, like Mesa does)
-     *
-     * - libGLES*.so nor libGL*.so was ever loaded.
-     *
-     * - we need to resolve entrypoints that application never asked (e.g.,
-     *   glGetIntegerv), for internal purposes
-     *
-     * Therefore, we try to fallback to eglGetProcAddress.
-     *
-     * See https://github.com/apitrace/apitrace/issues/301#issuecomment-68532248
-     */
-    if (strcmp(procName, "eglGetProcAddress") != 0) {
-        proc = (void *) _eglGetProcAddress(procName);
-        if (proc) {
-            return proc;
+    static void *libGL = NULL;
+    if (procName[0] == 'g' && procName[1] == 'l' && procName[2] == 'X') {
+        if (!libGL) {
+            libGL = dlopen("libGL.so.1", RTLD_LOCAL | RTLD_LAZY | RTLD_NOLOAD);
+            if (!libGL) {
+                return NULL;
+            }
         }
+        return dlsym(libGL, procName);
     }
 
     /*
-     * TODO: We could futher mitigate against using the wrong SO by:
-     * - using RTLD_NOLOAD to ensure we only use an existing SO
-     * - the determine the right SO via eglQueryAPI and glGetString(GL_VERSION)
+     * TODO: We could further mitigate against using the wrong SO by:
+     * - determining the right SO via eglQueryAPI and glGetString(GL_VERSION)
      */
 
     if (procName[0] == 'g' && procName[1] == 'l') {
+#ifdef HAVE_WAFFLE
+        return waffle_get_proc_address(procName);
+#else
+        if (!libGL) {
+            libGL = dlopen("libGL.so.1", RTLD_LOCAL | RTLD_LAZY | RTLD_NOLOAD);
+        }
+        if (libGL) {
+            proc = dlsym(libGL, procName);
+            if (proc) {
+                return proc;
+            }
+        }
+
         /* TODO: Use GLESv1/GLESv2 on a per-context basis. */
 
         static void *libGLESv2 = NULL;
         if (!libGLESv2) {
-            libGLESv2 = dlopen("libGLESv2.so", RTLD_LOCAL | RTLD_LAZY);
+            libGLESv2 = dlopen("libGLESv2.so.2", RTLD_LOCAL | RTLD_LAZY | RTLD_NOLOAD);
         }
         if (libGLESv2) {
             proc = dlsym(libGLESv2, procName);
-        }
-        if (proc) {
-            return proc;
+            if (proc) {
+                return proc;
+            }
         }
 
         static void *libGLESv1 = NULL;
         if (!libGLESv1) {
-            libGLESv1 = dlopen("libGLESv1_CM.so", RTLD_LOCAL | RTLD_LAZY);
+            libGLESv1 = dlopen("libGLESv1_CM.so.1", RTLD_LOCAL | RTLD_LAZY | RTLD_NOLOAD);
         }
         if (libGLESv1) {
             proc = dlsym(libGLESv1, procName);
+            if (proc) {
+                return proc;
+            }
         }
-        if (proc) {
-            return proc;
-        }
+#endif
     }
 
     return NULL;
@@ -171,6 +171,9 @@ _getPublicProcAddress(const char *procName)
 void *
 _getPrivateProcAddress(const char *procName)
 {
+#ifdef HAVE_WAFFLE
+    return waffle_get_proc_address(procName);
+#else
     void *proc;
     proc = _getPublicProcAddress(procName);
     if (!proc &&
@@ -180,6 +183,7 @@ _getPrivateProcAddress(const char *procName)
     }
 
     return proc;
+#endif
 }
 
 #endif

@@ -148,6 +148,23 @@ EGLDebugMessageType = FakeEnum(Int, [
     'EGL_DEBUG_MSG_INFO_KHR',
 ])
 
+EGLSurfaceCompressionRate = FakeEnum(Int, [
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_NONE_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_DEFAULT_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_1BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_2BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_3BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_4BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_5BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_6BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_7BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_8BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_9BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_10BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_11BPC_EXT',
+    'EGL_SURFACE_COMPRESSION_FIXED_RATE_12BPC_EXT',
+])
+
 def EGLIntArray(values):
     return AttribArray(Const(EGLint_enum), values, terminator = 'EGL_NONE')
 
@@ -185,18 +202,25 @@ EGLConfigAttribs = EGLIntArray([
     ('EGL_TRANSPARENT_BLUE_VALUE ', Int)
 ])
 
-EGLWindowsSurfaceAttribs = EGLIntArray([
+WindowSurfaceAttribsValues = [
     ('EGL_RENDER_BUFFER', FakeEnum(Int, ['EGL_SINGLE_BUFFER', 'EGL_BACK_BUFFER'])),
     ('EGL_VG_ALPHA_FORMAT', EGLVGAlphaFormat),
     ('EGL_VG_COLORSPACE', EGLVGColorspace),
     ('EGL_POST_SUB_BUFFER_SUPPORTED_NV', EGLBoolean),
-])
+    ('EGL_SURFACE_COMPRESSION_EXT', EGLSurfaceCompressionRate),
+    ('EGL_SURFACE_COMPRESSION_PLANE1_EXT', EGLSurfaceCompressionRate),
+    ('EGL_SURFACE_COMPRESSION_PLANE2_EXT', EGLSurfaceCompressionRate),
+]
+EGLWindowSurfaceAttribs = EGLAttribArray(WindowSurfaceAttribsValues)
+EGLWindowSurfaceAttribs_int = EGLIntArray(WindowSurfaceAttribsValues)
 
 
-EGLPixmapSurfaceAttribs = EGLIntArray([
+EGLPixmapSurfaceAttribsValues = [
     ('EGL_VG_ALPHA_FORMAT', EGLVGAlphaFormat),
     ('EGL_VG_COLORSPACE', EGLVGColorspace)
-])
+]
+EGLPixmapSurfaceAttribs = EGLAttribArray(EGLPixmapSurfaceAttribsValues)
+EGLPixmapSurfaceAttribs_int = EGLIntArray(EGLPixmapSurfaceAttribsValues)
 
 EGLPbufferAttribs = EGLIntArray([
     ('EGL_HEIGHT', Int),
@@ -329,8 +353,8 @@ eglapi.addFunctions([
     GlFunction(EGLBoolean, "eglCopyBuffers", [(EGLDisplay, "dpy"), (EGLSurface, "surface"), (EGLNativePixmapType, "target")]),
     GlFunction(EGLContext, "eglCreateContext", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLContext, "share_context"), (EGLContextAttribs, "attrib_list")]),
     GlFunction(EGLSurface, "eglCreatePbufferSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLPbufferAttribs, "attrib_list")]),
-    GlFunction(EGLSurface, "eglCreatePixmapSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLNativePixmapType, "pixmap"), (EGLPixmapSurfaceAttribs, "attrib_list")]),
-    GlFunction(EGLSurface, "eglCreateWindowSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLNativeWindowType, "win"), (EGLWindowsSurfaceAttribs, "attrib_list")]),
+    GlFunction(EGLSurface, "eglCreatePixmapSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLNativePixmapType, "pixmap"), (EGLPixmapSurfaceAttribs_int, "attrib_list")]),
+    GlFunction(EGLSurface, "eglCreateWindowSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLNativeWindowType, "win"), (EGLWindowSurfaceAttribs_int, "attrib_list")]),
     GlFunction(EGLBoolean, "eglDestroyContext", [(EGLDisplay, "dpy"), (EGLContext, "ctx")]),
     GlFunction(EGLBoolean, "eglDestroySurface", [(EGLDisplay, "dpy"), (EGLSurface, "surface")]),
     GlFunction(EGLBoolean, "eglGetConfigAttrib", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLint_enum, "attribute"), Out(Pointer(EGLint), "value")], sideeffects=False),
@@ -374,8 +398,8 @@ eglapi.addFunctions([
     GlFunction(EGLImage, "eglCreateImage", [(EGLDisplay, "dpy"), (EGLContext, "ctx"), (EGLenum, "target"), (EGLClientBuffer, "buffer"), (EGLImageAttribs, "attrib_list")]),
     GlFunction(EGLBoolean, "eglDestroyImage", [(EGLDisplay, "dpy"), (EGLImage, "image")]),
     GlFunction(EGLDisplay, "eglGetPlatformDisplay", [(EGLenum, "platform"), (OpaquePointer(Void), "native_display"), (EGLPlatformDisplayAttribs, "attrib_list")]),
-    GlFunction(EGLSurface, "eglCreatePlatformWindowSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (OpaquePointer(Void), "native_window"), (EGLAttribArray([]), "attrib_list")]),
-    GlFunction(EGLSurface, "eglCreatePlatformPixmapSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (OpaquePointer(Void), "native_pixmap"), (EGLAttribArray([]), "attrib_list")]),
+    GlFunction(EGLSurface, "eglCreatePlatformWindowSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (OpaquePointer(Void), "native_window"), (EGLWindowSurfaceAttribs, "attrib_list")]),
+    GlFunction(EGLSurface, "eglCreatePlatformPixmapSurface", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (OpaquePointer(Void), "native_pixmap"), (EGLPixmapSurfaceAttribs, "attrib_list")]),
     GlFunction(EGLBoolean, "eglWaitSync", [(EGLDisplay, "dpy"), (EGLSync, "sync"), (EGLint, "flags")]),
 
     # EGL_ANDROID_native_fence_sync
@@ -464,6 +488,9 @@ eglapi.addFunctions([
     # GL_OES_EGL_image
     GlFunction(Void, "glEGLImageTargetTexture2DOES", [(GLenum, "target"), (EGLImageKHR, "image")]),
     GlFunction(Void, "glEGLImageTargetRenderbufferStorageOES", [(GLenum, "target"), (EGLImageKHR, "image")]),
+
+    # EGL_EXT_surface_compression
+    GlFunction(EGLBoolean, "eglQuerySupportedCompressionRatesEXT", [(EGLDisplay, "dpy"), (EGLConfig, "config"), (EGLWindowSurfaceAttribs, "attrib_list"), Out(Array(EGLSurfaceCompressionRate, "*num_rates"), "rates"), (EGLint, "rate_size"), Out(Pointer(EGLint), "num_rates")], sideeffects=False),
 
     # EGL_WL_bind_wayland_display
     GlFunction(EGLBoolean, "eglBindWaylandDisplayWL", [(EGLDisplay, "dpy"), (WlDisplay, "display")]),

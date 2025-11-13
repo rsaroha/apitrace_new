@@ -1636,9 +1636,17 @@ glapi.addFunctions([
     GlFunction(Void, "glTexStorage2D", [(GLenum, "target"), (GLsizei, "levels"), (GLenum, "internalformat"), (GLsizei, "width"), (GLsizei, "height")]),
     GlFunction(Void, "glTexStorage3D", [(GLenum, "target"), (GLsizei, "levels"), (GLenum, "internalformat"), (GLsizei, "width"), (GLsizei, "height"), (GLsizei, "depth")]),
 
+    # GL_EXT_texture_storage_compression
+    GlFunction(Void, "glTexStorageAttribs2DEXT", [(GLenum, "target"), (GLsizei, "levels"), (GLenum, "internalformat"), (GLsizei, "width"), (GLsizei, "height"), (GLattribs_texStorage, "attrib_list")]),
+    GlFunction(Void, "glTexStorageAttribs3DEXT", [(GLenum, "target"), (GLsizei, "levels"), (GLenum, "internalformat"), (GLsizei, "width"), (GLsizei, "height"), (GLsizei, "depth"), (GLattribs_texStorage, "attrib_list")]),
+
     # GL_ARB_texture_storage_multisample
     GlFunction(Void, "glTexStorage2DMultisample", [(GLenum, "target"), (GLsizei, "samples"), (GLenum, "internalformat"), (GLsizei, "width"), (GLsizei, "height"), (GLboolean, "fixedsamplelocations")]),
     GlFunction(Void, "glTexStorage3DMultisample", [(GLenum, "target"), (GLsizei, "samples"), (GLenum, "internalformat"), (GLsizei, "width"), (GLsizei, "height"), (GLsizei, "depth"), (GLboolean, "fixedsamplelocations")]),
+
+    # GL_EXT_EGL_image_storage
+    GlFunction(Void, "glEGLImageTargetTexStorageEXT", [(GLenum, "target"), (GLeglImageOES, "image"), (GLattribs_texStorage, "attrib_list")]),
+    GlFunction(Void, "glEGLImageTargetTextureStorageEXT", [(GLtexture, "texture"), (GLeglImageOES, "image"), (GLattribs_texStorage, "attrib_list")]),
 
     # GL_ARB_texture_view
     GlFunction(Void, "glTextureView", [(GLtexture, "texture"), (GLenum, "target"), (GLtexture, "origtexture"), (GLenum, "internalformat"), (GLuint, "minlevel"), (GLuint, "numlevels"), (GLuint, "minlayer"), (GLuint, "numlayers")]),
@@ -2488,6 +2496,12 @@ glapi.addFunctions([
     # GL_EXT_map_buffer_range
     GlFunction(GLmap, "glMapBufferRangeEXT", [(GLenum, "target"), (GLintptr, "offset"), (GLsizeiptr, "length"), (GLbitfield_access, "access")]),
     GlFunction(Void, "glFlushMappedBufferRangeEXT", [(GLenum, "target"), (GLintptr, "offset"), (GLsizeiptr, "length")]),
+
+    # GL_EXT_mesh_shader
+    GlFunction(Void, "glDrawMeshTasksEXT", [(GLuint, "num_groups_x"), (GLuint, "num_groups_y"), (GLuint, "num_groups_z")]),
+    GlFunction(Void, "glDrawMeshTasksIndirectEXT", [(GLpointerConst, "indirect")]),
+    GlFunction(Void, "glMultiDrawMeshTasksIndirectEXT", [(GLpointerConst, "indirect"), (GLsizei, "drawcount"), (GLsizei, "stride")]),
+    GlFunction(Void, "glMultiDrawMeshTasksIndirectCountEXT", [(GLpointerConst, "indirect"), (GLsizei, "drawcount"), (GLsizei, "maxdrawcount"), (GLsizei, "stride")]),
 
     # GL_EXT_multi_draw_arrays
     GlFunction(Void, "glMultiDrawArraysEXT", [(GLenum_mode, "mode"), (Array(Const(GLint), "drawcount"), "first"), (Array(Const(GLsizei), "drawcount"), "count"), (GLsizei, "drawcount")]),
@@ -3504,6 +3518,10 @@ glapi.addFunctions([
     GlFunction(Void, "glDepthRangeArrayfvOES", [(GLuint, "first"), (GLsizei, "count"), (Array(Const(GLfloat), "count*2"), "v")]),
     GlFunction(Void, "glDepthRangeIndexedfOES", [(GLuint, "index"), (GLfloat, "n"), (GLfloat, "f")]),
     GlFunction(Void, "glGetFloati_vOES", [(GLenum, "target"), (GLuint, "index"), Out(Array(GLfloat, "_gl_param_size(target)"), "data")], sideeffects=False),
+
+    # GL_OVR_multiview
+    GlFunction(Void, "glFramebufferTextureMultiviewOVR", [(GLenum, "target"), (GLenum, "attachment"), (GLtexture, "texture"), (GLint, "level"), (GLint, "baseViewIndex"), (GLsizei, "numViews")]),
+    GlFunction(Void, "glNamedFramebufferTextureMultiviewOVR", [(GLframebuffer, "framebuffer"), (GLenum, "attachment"), (GLtexture, "texture"), (GLint, "level"), (GLint, "baseViewIndex"), (GLsizei, "numViews")]),
     
     # GL_PGI_misc_hints
     GlFunction(Void, "glHintPGI", [(GLenum, "target"), (GLint, "mode")]),

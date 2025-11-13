@@ -369,6 +369,8 @@ class GlTracer(Tracer):
         "glEdgeFlagPointerEXT",
         "glFogCoordPointerEXT",
         "glSecondaryColorPointerEXT",
+        
+        "glMultiTexCoordPointerEXT",
 
         "glVertexAttribPointer",
         "glVertexAttribPointerARB",
@@ -523,6 +525,12 @@ class GlTracer(Tracer):
             print('    gltrace::Context *_ctx = gltrace::getContext();')
             print('    if (_ctx) {')
             print('        _ctx->lockedArrayCount = first + count;')
+            print('    }')
+
+        if function.name == 'glUnlockArraysEXT':
+            print('    gltrace::Context *_ctx = gltrace::getContext();')
+            print('    if (_ctx) {')
+            print('        _ctx->lockedArrayCount = 0;')
             print('    }')
 
         # Warn if user arrays are used with glBegin/glArrayElement/glEnd.
