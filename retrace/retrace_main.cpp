@@ -61,6 +61,8 @@
 
 
 static bool waitOnFinish = false;
+static bool waitOnFrame = false;
+int wait_frame_num = 0;
 
 static const char *snapshotPrefix = "";
 static enum {
@@ -553,8 +555,17 @@ public:
     void
     runLeg(trace::Call *call) {
 
+        int frame_count = 1;
+        BOOL start_new_frame = TRUE;
+
         /* Consume successive calls for this thread. */
-        do {
+        do 
+        {
+            if (start_new_frame)
+            {
+                start_new_frame = FALSE;
+                std::cout << "\n Rendering Frame : " << frame_count << "\n";
+            }
 
             assert(call);
             assert(call->thread_id == leg);
@@ -565,6 +576,27 @@ public:
             if (!call->reuse_call)
                 delete call;
             call = parser->parse_call();
+
+            if (call && strcmp(call->sig->name, "wglSwapBuffers") == 0)
+            {
+                int usr_input =0;
+
+                if(waitOnFrame && frame_count >= wait_frame_num)
+                {
+                   std::cout << "\nEnter choice to render next Frame\n";
+                   std::cout << "\n\t1 - Render Next frame then wait";
+                   std::cout << "\n\t2 - Continue to the end of trace\n";
+
+                   while( (usr_input != 1) && (usr_input != 2))
+                   {
+                       std::cin >> usr_input;
+                   }
+                   if(usr_input == 2)
+                      waitOnFrame = false;
+                }
+                start_new_frame = TRUE;
+                frame_count++;
+            }
 
         } while (call && call->thread_id == leg);
 
@@ -811,6 +843,7 @@ usage(const char *argv0) {
         "      --min-frame-duration=MICROSECONDS   specify minimum frame rendering duration\n"
         "      --per-frame-delay=MICROSECONDS   add extra delay after each frame (in addition to min-frame-duration)\n"
         "  -w, --wait              waitOnFinish on final frame\n"
+        "      --frame[=N]         wait at the begenning of N-th frame.\n"
         "      --loop[=N]          loop N times (N<0 continuously) replaying final frame.\n"
         "      --watchdog          invokes abort() if retrace of a single api call will take more than " << retrace::RetraceWatchdog::TimeoutInSec << " seconds\n"
         "      --singlethread      use a single thread to replay command stream\n"
@@ -846,6 +879,7 @@ enum {
     MIN_FRAME_DURATION_OPT,
     PER_FRAME_DELAY_OPT,
     LOOP_OPT,
+    WAIT_FRAME_OPT,
     SINGLETHREAD_OPT,
     IGNORE_RETVALS_OPT,
     NO_CONTEXT_CHECK,
@@ -904,6 +938,7 @@ longOptions[] = {
     {"snapshot-threaded", no_argument, 0, 't'},
     {"verbose", no_argument, 0, 'v'},
     {"wait", no_argument, 0, 'w'},
+    {"frame", optional_argument, 0, WAIT_FRAME_OPT},
     {"watchdog", no_argument, 0, WATCHDOG_OPT},
     {"min-frame-duration", required_argument, 0, MIN_FRAME_DURATION_OPT},
     {"per-frame-delay", required_argument, 0, PER_FRAME_DELAY_OPT},
@@ -1294,6 +1329,10 @@ int main(int argc, char **argv)
             break;
         case PER_FRAME_DELAY_OPT:
             perFrameDelayUsec = trace::intOption(optarg, 0);
+            break;
+        case WAIT_FRAME_OPT:
+            waitOnFrame = true;
+            wait_frame_num = trace::intOption(optarg, -1);
             break;
         case LOOP_OPT:
             loopCount = trace::intOption(optarg, -1);
