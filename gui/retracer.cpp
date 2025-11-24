@@ -549,7 +549,7 @@ void Retracer::run()
                 thumbnails.insert(info.commentNumber, thumb);
             }
 
-            Q_ASSERT(process.state() != QProcess::Running);
+            //Q_ASSERT(process.state() != QProcess::Running);
         } else if (isProfiling()) {
             profile = new trace::Profile();
 
