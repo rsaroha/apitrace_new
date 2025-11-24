@@ -561,7 +561,7 @@ public:
         /* Consume successive calls for this thread. */
         do 
         {
-            if (start_new_frame)
+            if (waitOnFrame && start_new_frame)
             {
                 start_new_frame = FALSE;
                 std::cout << "\n Rendering Frame : " << frame_count << "\n";

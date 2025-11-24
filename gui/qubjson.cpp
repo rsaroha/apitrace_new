@@ -149,9 +149,7 @@ readChar(QDataStream &stream)
     stream >> c;
     Q_ASSERT(c >= 0);
 
-    QChar qc = QLatin1Char(c);
-
-    return qc;
+    return QChar(c);
 }
 
 
