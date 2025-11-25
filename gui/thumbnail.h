@@ -1,6 +1,6 @@
 #pragma once
 
-#define THUMBNAIL_SIZE 64
+#define THUMBNAIL_SIZE 128
 
 #include <QImage>
 
