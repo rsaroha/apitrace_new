@@ -149,7 +149,7 @@ readChar(QDataStream &stream)
     stream >> c;
     Q_ASSERT(c >= 0);
 
-    return QChar(c);
+    return QChar(static_cast<ushort>(c));
 }
 
 
@@ -296,4 +296,3 @@ QVariant decodeUBJSONObject(QIODevice *io)
     Marker marker = readMarker(stream);
     return readVariant(stream, marker);
 }
-

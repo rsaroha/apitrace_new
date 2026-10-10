@@ -92,10 +92,10 @@ macro (add_linker_flags)
     set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${_FLAGS}")
 endmacro ()
 
-# Use static runtime
+# Use the DLL runtime required by the dynamically linked Qt libraries.
 # https://cmake.org/cmake/help/v3.15/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html
 if (MSVC)
-    set (CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set (CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif ()
 
 # Enable Address Sanitizer
