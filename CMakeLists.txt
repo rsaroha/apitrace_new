@@ -13,6 +13,7 @@ if (CMAKE_GENERATOR STREQUAL "Xcode")
     message (FATAL_ERROR "Xcode generator is not supported. Please build with \"Unix Makefiles\" or \"Ninja\" generators.")
 endif ()
 
+set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo" CACHE STRING "Allowed build types" FORCE)
 
 project (apitrace)
 
